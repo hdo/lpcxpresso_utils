@@ -34,20 +34,6 @@ __INLINE static void systick_delay (uint32_t delayTicks) {
   while ((msTicks - currentTicks) < delayTicks);
 }
 
-uint32_t get_diff(uint32_t value1, uint32_t value2) {
-	if (value1 == value2) {
-		return 0;
-	}
-	if (value1 > value2) {
-		return (value1 - value2);
-	}
-	else {
-		// check for timer overflow
-		return (UINT32_MAX - value2 + value1);
-	}
-}
-
-
 // ****************
 int main(void) {
 	
