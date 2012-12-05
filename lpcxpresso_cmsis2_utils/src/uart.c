@@ -386,8 +386,16 @@ uint32_t UARTInit( uint8_t PortNum, uint32_t baudrate )
   }
   else if ( PortNum == 1 )
   {
+    LPC_PINCON->PINSEL0	&= (~(0b11 << 30));
+    LPC_PINCON->PINSEL1	&= (~(0b11 << 0));
+    LPC_PINCON->PINSEL0	|= (0b01 << 30);
+    LPC_PINCON->PINSEL1	|= (0b01 << 0);
+
+
+    /*
 	LPC_PINCON->PINSEL4 &= ~0x0000000F;
-	LPC_PINCON->PINSEL4 |= 0x0000000A;	/* Enable RxD1 P2.1, TxD1 P2.0 */
+	LPC_PINCON->PINSEL4 |= 0x0000000A;	// Enable RxD1 P2.1, TxD1 P2.0
+    */
 	
 	/* By default, the PCLKSELx value is zero, thus, the PCLK for
 	all the peripherals is 1/4 of the SystemFrequency. */
@@ -411,7 +419,9 @@ uint32_t UARTInit( uint8_t PortNum, uint32_t baudrate )
 	}
 
 	/* 8n1 */
-    LPC_UART1->LCR = 0x83;		/* 8 bits, no Parity, 1 Stop bit */
+    //LPC_UART1->LCR = 0x83;		/* 8 bits, no Parity, 1 Stop bit */
+	/* 7e1 */
+    LPC_UART1->LCR = 0x9a;		/* 7 bits, even Parity, 1 Stop bit */
 
     /* 7e1 */
     // LPC_UART1->LCR = 0x92;		/* 7 bits, even Parity, 1 Stop bit */
@@ -433,10 +443,11 @@ uint32_t UARTInit( uint8_t PortNum, uint32_t baudrate )
   {
  	  LPC_PINCON->PINSEL0 &= ~0x00F00000;
 
- 	  /* disable pull up */
+ 	  /*
+ 	  //disable pull up
  	  LPC_PINCON->PINMODE0 &= ~(0b11<<22);
   	  LPC_PINCON->PINMODE0 |= 0b10<<22;
-
+  	  */
 
  	  //LPC_PINCON->PINSEL0 |=  0x0000000A;  /* RxD3 is P0.1 and TxD3 is P0.0 */
  	  /* oder aequivalent: */
@@ -464,10 +475,10 @@ uint32_t UARTInit( uint8_t PortNum, uint32_t baudrate )
  	  }
 
  	  /* 8n1 */
- 	  LPC_UART2->LCR = 0x83;		/* 8 bits, no Parity, 1 Stop bit */
+ 	  //LPC_UART2->LCR = 0x83;		/* 8 bits, no Parity, 1 Stop bit */
 
  	  /* 7e1 */
- 	  // LPC_UART1->LCR = 0x92;		/* 7 bits, even Parity, 1 Stop bit */
+ 	  LPC_UART2->LCR = 0x9a;		/* 7 bits, even Parity, 1 Stop bit */
 
  	  Fdiv = ( pclk / 16 ) / baudrate ;	/*baud rate */
  	  LPC_UART2->DLM = Fdiv / 256;

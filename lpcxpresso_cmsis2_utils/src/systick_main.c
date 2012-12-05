@@ -16,6 +16,9 @@ __CRP const unsigned int CRP_WORD = CRP_NO_CRP ;
 
 volatile uint32_t msTicks; // counter for 1ms SysTicks
 extern volatile unsigned int eint3_count;
+extern volatile uint32_t UART2Count, UART0Count, UART1Count, UART3Count;
+extern volatile uint8_t UART2Buffer[BUFSIZE], UART0Buffer[BUFSIZE], UART1Buffer[BUFSIZE], UART3Buffer[BUFSIZE];
+
 
 
 // ****************
@@ -50,10 +53,12 @@ int main(void) {
 	systick_delay(100);
 	led2_off();
 	systick_delay(100);
-	led2_on();
+	led2_off();
 
 
 	UARTInit(0, 115200);	/* baud rate setting */
+	UARTInit(1, 9600);	/* baud rate setting, PC */
+	UARTInit(2, 9600);	/* baud rate setting, RS485*/
 	UARTSendCRLF(0);
 	UARTSendCRLF(0);
 	UARTSendStringln(0, "UART2 online ...");
@@ -71,6 +76,8 @@ int main(void) {
 
 	//EINT3_enable();
 	logger_logStringln("logger online ...");
+	uint8_t data, datac, i1, i2;
+	uint8_t hex_data[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 	while(1) {
 
 		/* process logger */
@@ -98,34 +105,67 @@ int main(void) {
 		}
 
 
-		/*
-		if (!s0_active) {
-			s0_newState = ~LPC_GPIO0->FIOPIN & (S0_INPUT0 | S0_INPUT1);
-			if (s0_oldState != s0_newState) {
-				s0_active = 1;
-				s0_msticks = msTicks;
+		if ( UART0Count != 0 ) {
+			led2_on();
+			LPC_UART0->IER = IER_THRE | IER_RLS;				/* Disable RBR */
+
+			int i = 0;
+			for(; i < UART0Count; i++) {
+				logger_logByte(UART0Buffer[i]);
 			}
+			UART0Count = 0;
+			LPC_UART0->IER = IER_THRE | IER_RLS | IER_RBR;		/* Re-enable RBR */
+			led2_off();
 		}
 
-		if (s0_active && s0_msticks != msTicks) {
-			s0_state = ~LPC_GPIO0->FIOPIN & (S0_INPUT0 | S0_INPUT1 );
-			logger_logNumberln(s0_state);
-			if (s0_state == s0_newState) {
-				// falling edge
-				if ((s0_newState & S0_INPUT0) > 0) {
-					led2_invert();
-				}
+		/* UART1 is PC */
+		if ( UART1Count != 0 ) {
+			//led2_on();
+			LPC_UART1->IER = IER_THRE | IER_RLS;				/* Disable RBR */
 
-				// rising edge
-				if ((s0_newState & S0_INPUT1) == 0) {
-					led2_invert();
-				}
-
+			int i = 0;
+			led_on(7);
+			led_on(0);
+			for(; i < UART1Count; i++) {
+				/* forward to RS485 */
+				/* convert to 7e1 */
+				//data = UART1Buffer[i] & 0b01111111;
+				data = UART1Buffer[i];
+				datac = data & 0b01111111;
+				UARTSendByte(2, data);
+				logger_logByte(datac);
 			}
-			s0_oldState = s0_state;
-			s0_active = 0;
+			led_off(0);
+			led_off(7);
+			UART1Count = 0;
+			LPC_UART1->IER = IER_THRE | IER_RLS | IER_RBR;		/* Re-enable RBR */
 		}
-		 */
+
+		/* UART2 is RS485 */
+		if ( UART2Count != 0 ) {
+			led_signal(1, 300, msTicks);
+			led2_on();
+			LPC_UART2->IER = IER_THRE | IER_RLS;				/* Disable RBR */
+
+			int i = 0;
+			for(; i < UART2Count; i++) {
+				/* forward to PC */
+				//data = UART2Buffer[i] & 0b01111111;
+				data = UART2Buffer[i];
+				datac = data & 0b01111111;
+				i1 = (datac & 0x0F);
+				i2 = (datac >> 4) & 0x0F;
+				logger_logByte(hex_data[i2]);
+				logger_logByte(hex_data[i1]);
+				logger_logCRLF();
+				//logger_logNumberln(datac);
+			}
+			UART2Count = 0;
+			LPC_UART2->IER = IER_THRE | IER_RLS | IER_RBR;		/* Re-enable RBR */
+			led2_off();
+		}
+
+
 	}
 	return 0 ;
 }
