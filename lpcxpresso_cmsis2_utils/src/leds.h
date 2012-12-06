@@ -2,7 +2,7 @@
 #define LEDS_H_
 
 
-#define USE_ONBOARD_LED 1
+//#define USE_ONBOARD_LED 1
 
 // define max number of external leds (excluding onboard led)
 #define MAX_LEDS 8

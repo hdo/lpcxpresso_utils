@@ -32,7 +32,7 @@
 #include "uart.h"
 #include <stdlib.h>
 
-//#define RS485_USE_RTS1 1
+#define RS485_USE_RTS1
 
 
 volatile uint32_t UART0Status, UART1Status, UART2Status, UART3Status;
