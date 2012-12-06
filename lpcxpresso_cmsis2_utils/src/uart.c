@@ -370,13 +370,10 @@ uint32_t UARTInit( uint8_t PortNum, uint32_t baudrate )
 		break;
 	}
 
-	/* 8n1 */
-    LPC_UART0->LCR = 0x83;		/* 8 bits, no Parity, 1 Stop bit */
-
 	Fdiv = ( pclk / 16 ) / baudrate ;	/*baud rate */
     LPC_UART0->DLM = Fdiv / 256;							
     LPC_UART0->DLL = Fdiv % 256;
-	LPC_UART0->LCR = 0x03;		/* DLAB = 0 */
+	LPC_UART0->LCR = 0x03;		/* DLAB = 0, 8 bits, no Parity, 1 Stop bit */
     LPC_UART0->FCR = 0x07;		/* Enable and reset TX and RX FIFO. */
 
    	NVIC_EnableIRQ(UART0_IRQn);
@@ -386,10 +383,17 @@ uint32_t UARTInit( uint8_t PortNum, uint32_t baudrate )
   }
   else if ( PortNum == 1 )
   {
+	// set TXD1 function //
     LPC_PINCON->PINSEL0	&= (~(0b11 << 30));
-    LPC_PINCON->PINSEL1	&= (~(0b11 << 0));
     LPC_PINCON->PINSEL0	|= (0b01 << 30);
+
+    // set RXD1 function //
+    LPC_PINCON->PINSEL1	&= (~(0b11 << 0));
     LPC_PINCON->PINSEL1	|= (0b01 << 0);
+
+    // set DTR1 function
+    LPC_PINCON->PINSEL1	&= (~(0b11 << 8));
+    LPC_PINCON->PINSEL1	|= (0b01 << 8);
 
 
     /*
@@ -418,21 +422,19 @@ uint32_t UARTInit( uint8_t PortNum, uint32_t baudrate )
 		break;
 	}
 
-	/* 8n1 */
-    //LPC_UART1->LCR = 0x83;		/* 8 bits, no Parity, 1 Stop bit */
-	/* 7e1 */
-    LPC_UART1->LCR = 0x9a;		/* 7 bits, even Parity, 1 Stop bit */
-
-    /* 7e1 */
-    // LPC_UART1->LCR = 0x92;		/* 7 bits, even Parity, 1 Stop bit */
-
-
-
 	Fdiv = ( pclk / 16 ) / baudrate ;	/*baud rate */
     LPC_UART1->DLM = Fdiv / 256;							
     LPC_UART1->DLL = Fdiv % 256;
-	LPC_UART1->LCR = 0x03;		/* DLAB = 0 */
-    LPC_UART1->FCR = 0x07;		/* Enable and reset TX and RX FIFO. */
+	//LPC_UART1->LCR = 0x03;	 /* DLAB = 0, 8N1 */
+	LPC_UART1->LCR = 0x1A;		 /* DLAB = 0, 7E1 */
+    LPC_UART1->FCR = 0x07;		 /* Enable and reset TX and RX FIFO. */
+
+    /* RS485 features */
+    /* set DTR as direction control (bit 3) */
+    /* enable direction control (bit 4) */
+    /* DTR high for sending (bit 5) */
+    LPC_UART1->RS485CTRL = 1 << 3 | 1 << 4 | 1 << 5;
+
 
    	NVIC_EnableIRQ(UART1_IRQn);
 
@@ -451,8 +453,10 @@ uint32_t UARTInit( uint8_t PortNum, uint32_t baudrate )
 
  	  //LPC_PINCON->PINSEL0 |=  0x0000000A;  /* RxD3 is P0.1 and TxD3 is P0.0 */
  	  /* oder aequivalent: */
+
  	  LPC_PINCON->PINSEL0 |= 0b01 << 20 | 0b01 << 22;
  	  LPC_SC->PCONP |= 1<<4 | 1<<24; //Enable PCUART1 PCUART2
+
  	  /* By default, the PCLKSELx value is zero, thus, the PCLK for
  		all the peripherals is 1/4 of the SystemFrequency. */
  	  /* Bit 6~7 is for UART3 */
@@ -474,21 +478,17 @@ uint32_t UARTInit( uint8_t PortNum, uint32_t baudrate )
  		  break;
  	  }
 
- 	  /* 8n1 */
- 	  //LPC_UART2->LCR = 0x83;		/* 8 bits, no Parity, 1 Stop bit */
-
- 	  /* 7e1 */
- 	  LPC_UART2->LCR = 0x9a;		/* 7 bits, even Parity, 1 Stop bit */
 
  	  Fdiv = ( pclk / 16 ) / baudrate ;	/*baud rate */
  	  LPC_UART2->DLM = Fdiv / 256;
  	  LPC_UART2->DLL = Fdiv % 256;
- 	  LPC_UART2->LCR = 0x03;		/* DLAB = 0 */
+ 	  //LPC_UART2->LCR = 0x03;	 /* DLAB = 0, 8N1 */
+ 	  LPC_UART2->LCR = 0x1A;		 /* DLAB = 0, 7E1 */
  	  LPC_UART2->FCR = 0x07;		/* Enable and reset TX and RX FIFO. */
 
  	  NVIC_EnableIRQ(UART2_IRQn);
 
- 	  LPC_UART2->IER = IER_RBR | IER_THRE | IER_RLS;	/* Enable UART3 interrupt */
+ 	  LPC_UART2->IER = IER_RBR | IER_THRE | IER_RLS;	/* Enable UART2 interrupt */
  	  return (TRUE);
    }
   else if ( PortNum == 3 )
