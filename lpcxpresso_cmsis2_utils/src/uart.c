@@ -32,6 +32,8 @@
 #include "uart.h"
 #include <stdlib.h>
 
+//#define RS485_USE_RTS1 1
+
 
 volatile uint32_t UART0Status, UART1Status, UART2Status, UART3Status;
 volatile uint8_t UART0TxEmpty = 1, UART1TxEmpty = 1, UART2TxEmpty = 1, UART3TxEmpty=1;
@@ -383,6 +385,7 @@ uint32_t UARTInit( uint8_t PortNum, uint32_t baudrate )
   }
   else if ( PortNum == 1 )
   {
+
 	// set TXD1 function //
     LPC_PINCON->PINSEL0	&= (~(0b11 << 30));
     LPC_PINCON->PINSEL0	|= (0b01 << 30);
@@ -391,10 +394,15 @@ uint32_t UARTInit( uint8_t PortNum, uint32_t baudrate )
     LPC_PINCON->PINSEL1	&= (~(0b11 << 0));
     LPC_PINCON->PINSEL1	|= (0b01 << 0);
 
+#ifdef RS485_USE_RTS1
+    // set RTS1 function for RS485 direction control
+    LPC_PINCON->PINSEL1	&= (~(0b11 << 12));
+    LPC_PINCON->PINSEL1	|= (0b01 << 12);
+#else
     // set DTR1 function for RS485 direction control
     LPC_PINCON->PINSEL1	&= (~(0b11 << 8));
     LPC_PINCON->PINSEL1	|= (0b01 << 8);
-
+#endif
 
     /*
 	LPC_PINCON->PINSEL4 &= ~0x0000000F;
@@ -433,7 +441,11 @@ uint32_t UARTInit( uint8_t PortNum, uint32_t baudrate )
     /* set DTR as direction control (bit 3) */
     /* enable direction control (bit 4) */
     /* DTR high for sending (bit 5) */
+#ifdef RS485_USE_RTS1
+    LPC_UART1->RS485CTRL = 1 << 4 | 1 << 5;
+#else
     LPC_UART1->RS485CTRL = 1 << 3 | 1 << 4 | 1 << 5;
+#endif
 
 
    	NVIC_EnableIRQ(UART1_IRQn);
