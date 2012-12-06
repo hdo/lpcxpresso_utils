@@ -391,7 +391,7 @@ uint32_t UARTInit( uint8_t PortNum, uint32_t baudrate )
     LPC_PINCON->PINSEL1	&= (~(0b11 << 0));
     LPC_PINCON->PINSEL1	|= (0b01 << 0);
 
-    // set DTR1 function
+    // set DTR1 function for RS485 direction control
     LPC_PINCON->PINSEL1	&= (~(0b11 << 8));
     LPC_PINCON->PINSEL1	|= (0b01 << 8);
 
