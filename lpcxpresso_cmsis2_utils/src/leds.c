@@ -8,10 +8,13 @@ uint32_t led_timeout[] = {0, 0, 0, 0, 0, 0, 0, 0};
 // Function to initialise GPIO to access led
 void led_init (void)
 {
+
+#ifdef USE_ONBOARD_LED
 	// Set P0_22 to 00 - GPIO
 	LPC_PINCON->PINSEL1	&= (~(3 << 12));
 	// Set GPIO - P0_22 - to be output
 	LPC_GPIO0->FIODIR |= (1 << LED_ONBOARD);
+#endif
 
 	// set P2_0 - P2_5 to 00 - GPIO (see UM page 110)
 	LPC_PINCON->PINSEL4	&= (~(3 << 0));
@@ -44,18 +47,23 @@ uint32_t calc_diff(uint32_t value1, uint32_t value2) {
 // Function to turn led on
 void led2_on (void)
 {
+#ifdef USE_ONBOARD_LED
 	LPC_GPIO0->FIOSET = (1 << LED_ONBOARD);
+#endif
 }
 
 // Function to turn led off
 void led2_off (void)
 {
+#ifdef USE_ONBOARD_LED
 	LPC_GPIO0->FIOCLR = (1 << LED_ONBOARD);
+#endif
 }
 
 // Function to invert current state of led
 void led2_invert (void)
 {
+#ifdef USE_ONBOARD_LED
 	int ledstate;
 
 	// Read current state of GPIO P0_0..31, which includes led
@@ -66,6 +74,7 @@ void led2_invert (void)
 	// Turn on led if it is off
 	// (ANDing to ensure we only affect the LED output)
 	LPC_GPIO0->FIOSET = ((~ledstate) & (1 << LED_ONBOARD));
+#endif
 }
 
 // Function to turn led on
