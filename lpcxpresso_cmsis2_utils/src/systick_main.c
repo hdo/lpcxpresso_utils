@@ -88,14 +88,8 @@ int main(void) {
 			logger_logNumberln(triggerValue);
 			led_signal(1, 30, msTicks);
 
-			LPC_UART2->IER = IER_THRE | IER_RLS;				/* Disable RBR */
-
-			led_on(7);
-			//UARTSendStringln(2, "/?001511420144!");
-			UARTSendStringln(2, "/?!");
-			led_off(7);
-			LPC_UART2->IER = IER_THRE | IER_RLS | IER_RBR;		/* Re-enable RBR */
-
+			//UARTSendStringln(1, "/?001511420144!");
+			UARTSendStringln(1, "/?!");
 		}
 
 		triggerValue = s0_triggered(1);
