@@ -372,6 +372,7 @@ uint32_t UARTInit( uint8_t PortNum, uint32_t baudrate )
 		break;
 	}
 
+	LPC_UART0->LCR = 0x83;
 	Fdiv = ( pclk / 16 ) / baudrate ;	/*baud rate */
     LPC_UART0->DLM = Fdiv / 256;							
     LPC_UART0->DLL = Fdiv % 256;
@@ -429,6 +430,8 @@ uint32_t UARTInit( uint8_t PortNum, uint32_t baudrate )
 		pclk = SystemCoreClock/8;
 		break;
 	}
+
+	LPC_UART1->LCR = 0x83;
 
 	Fdiv = ( pclk / 16 ) / baudrate ;	/*baud rate */
     LPC_UART1->DLM = Fdiv / 256;							
@@ -490,6 +493,7 @@ uint32_t UARTInit( uint8_t PortNum, uint32_t baudrate )
  		  break;
  	  }
 
+      LPC_UART2->LCR = 0x83;
 
  	  Fdiv = ( pclk / 16 ) / baudrate ;	/*baud rate */
  	  LPC_UART2->DLM = Fdiv / 256;
