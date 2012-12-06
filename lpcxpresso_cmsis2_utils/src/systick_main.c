@@ -116,8 +116,8 @@ int main(void) {
 
 		/* UART1 is RS485 */
 		if ( UART1Count != 0 ) {
-			led_signal(2, 30, msTicks);
-			led_on(0);
+			led_signal(1, 30, msTicks);
+			//led_on(0);
 			LPC_UART1->IER = IER_THRE | IER_RLS;				/* Disable RBR */
 
 			//logger_logNumberln(UART2Count);
@@ -127,18 +127,26 @@ int main(void) {
 				data = UART1Buffer[i];
 				datac = data & 0b01111111;
 				UARTSendByte(2, data);
-				logger_logByte(data);
+				switch(data) {
+				case 0x01 : logger_logString("|SOH|"); break;
+				case 0x02 : logger_logString("|STX|"); break;
+				case 0x03 : logger_logString("|ETX|"); break;
+				case 0x06 : logger_logString("|ACK|"); break;
+				case 0x15 : logger_logString("|NAK|"); break;
+				default: logger_logByte(data);
+				}
+				//logger_logByte(data);
 			}
 
 			UART1Count = 0;
 			LPC_UART1->IER = IER_THRE | IER_RLS | IER_RBR;		/* Re-enable RBR */
-			led_off(0);
+			//led_off(0);
 		}
 
 		/* UART2 is PC */
 		if ( UART2Count != 0 ) {
-			led_signal(1, 30, msTicks);
-			led_on(1);
+			led_signal(2, 30, msTicks);
+			//led_on(1);
 			LPC_UART2->IER = IER_THRE | IER_RLS;				/* Disable RBR */
 
 			int i = 0;
@@ -147,12 +155,19 @@ int main(void) {
 				data = UART2Buffer[i];
 				datac = data & 0b01111111;
 				UARTSendByte(1, data);
-				logger_logByte(data);
+				switch(data) {
+				case 0x01 : logger_logString("-SOH-"); break;
+				case 0x02 : logger_logString("-STX-"); break;
+				case 0x03 : logger_logString("-ETX-"); break;
+				case 0x06 : logger_logString("-ACK-"); break;
+				case 0x15 : logger_logString("-NAK-"); break;
+				default: logger_logByte(data);
+				}
 			}
 
 			UART2Count = 0;
 			LPC_UART2->IER = IER_THRE | IER_RLS | IER_RBR;		/* Re-enable RBR */
-			led_off(1);
+			//led_off(1);
 		}
 
 	}
