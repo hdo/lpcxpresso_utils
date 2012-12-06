@@ -137,6 +137,7 @@ int main(void) {
 
 		/* UART2 is PC */
 		if ( UART2Count != 0 ) {
+			led_signal(1, 30, msTicks);
 			led_on(1);
 			LPC_UART2->IER = IER_THRE | IER_RLS;				/* Disable RBR */
 
