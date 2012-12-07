@@ -137,7 +137,7 @@ int main(void) {
 					logger_logString("{BCC 0x");
 					logger_logByte(hex_data[i2]);
 					logger_logByte(hex_data[i1]);
-					logger_logString("}");
+					logger_logStringln("}");
 				}
 				else {
 					switch(data) {
@@ -177,7 +177,7 @@ int main(void) {
 					logger_logString("[BCC 0x");
 					logger_logByte(hex_data[i2]);
 					logger_logByte(hex_data[i1]);
-					logger_logString("]");
+					logger_logStringln("]");
 				}
 				else {
 					switch(data) {
