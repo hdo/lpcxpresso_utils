@@ -66,10 +66,12 @@ int main(void) {
 
 	//EINT3_enable();
 	logger_logStringln("logger online ...");
-	uint8_t data, datac, i1, i2;
+	uint8_t data, datac, i1, i2, bcc1, bcc2;
 	uint8_t hex_data[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 	led_off(7);
 
+	bcc1 = 0;
+	bcc2 = 0;
 	while(1) {
 
 		/* process logger */
@@ -127,15 +129,27 @@ int main(void) {
 				data = UART1Buffer[i];
 				datac = data & 0b01111111;
 				UARTSendByte(2, data);
-				switch(data) {
-				case 0x01 : logger_logString("|SOH|"); break;
-				case 0x02 : logger_logString("|STX|"); break;
-				case 0x03 : logger_logString("|ETX|"); break;
-				case 0x06 : logger_logString("|ACK|"); break;
-				case 0x15 : logger_logString("|NAK|"); break;
-				default: logger_logByte(data);
+
+				if (bcc1) {
+					bcc1 = 0;
+					i1 = data & 0xF;
+					i2 = data >> 4;
+					logger_logString("{BCC 0x");
+					logger_logByte(hex_data[i2]);
+					logger_logByte(hex_data[i1]);
+					logger_logString("}");
 				}
-				//logger_logByte(data);
+				else {
+					switch(data) {
+					case 0x01 : logger_logString("{SOH}"); break;
+					case 0x02 : logger_logString("{STX}"); break;
+					case 0x03 : logger_logString("{ETX}"); bcc1 = 1; break;
+					case 0x04 : logger_logString("{EOT}"); bcc1 = 1; break;
+					case 0x06 : logger_logString("{ACK}"); break;
+					case 0x15 : logger_logString("{NAK}"); break;
+					default: logger_logByte(data);
+					}
+				}
 			}
 
 			UART1Count = 0;
@@ -155,13 +169,27 @@ int main(void) {
 				data = UART2Buffer[i];
 				datac = data & 0b01111111;
 				UARTSendByte(1, data);
-				switch(data) {
-				case 0x01 : logger_logString("-SOH-"); break;
-				case 0x02 : logger_logString("-STX-"); break;
-				case 0x03 : logger_logString("-ETX-"); break;
-				case 0x06 : logger_logString("-ACK-"); break;
-				case 0x15 : logger_logString("-NAK-"); break;
-				default: logger_logByte(data);
+
+				if (bcc2) {
+					bcc2 = 0;
+					i1 = data & 0xF;
+					i2 = data >> 4;
+					logger_logString("[BCC 0x");
+					logger_logByte(hex_data[i2]);
+					logger_logByte(hex_data[i1]);
+					logger_logString("]");
+				}
+				else {
+					switch(data) {
+					case 0x01 : logger_logString("[SOH]"); break;
+					case 0x02 : logger_logString("[STX]"); break;
+					case 0x03 : logger_logString("[ETX]"); bcc2 = 1; break;
+					case 0x04 : logger_logString("[EOT]"); bcc2 = 1; break;
+					case 0x06 : logger_logString("[ACK]"); break;
+					case 0x15 : logger_logString("[NAK]"); break;
+					default:
+						logger_logByte(data);
+					}
 				}
 			}
 
